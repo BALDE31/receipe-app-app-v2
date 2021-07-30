@@ -1,26 +1,19 @@
-# syntax=docker/dockerfile:experimental
-FROM python:3.9-slim
-LABEL maintainer="Balmar Group corporation"
+FROM python:3.8-alpine
+LABEL maaintainer="Balmar Group corporation"
 
 ENV PYTHONUNBUFFERED 1
 
-RUN apt update
-RUN apt-get install -y gdal-bin \
- libgdal-dev \
- libffi-dev \
- git \
- curl
-
+COPY ./requirements.txt /requirements.txt
+RUN apk add --update --no-cache postgresql-client
+RUN apk add --update --no-cache --virtual .tmp-build-deps \
+       gcc libc-dev linux-headers postgresql-dev
+RUN pip install -r /requirements.txt
+RUN apk del .tmp-build-deps
 
 RUN  mkdir /app
-
 WORKDIR /app
+COPY ./app /app
 
-COPY requirements.txt /app/
-RUN pip install -r requirements.txt
-COPY . /app/
-
-RUN adduser  user
+RUN adduser -D user
 USER user
-
 
