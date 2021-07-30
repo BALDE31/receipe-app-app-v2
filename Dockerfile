@@ -1,17 +1,24 @@
-FROM python:3.8-alpine
+FROM python:3.9-slim
 LABEL maintainer="Balmar Group corporation"
 
 ENV PYTHONUNBUFFERED 1
 
-COPY ./requirements.txt /requirements.txt
+RUN apt update
+RUN apt-get install -y gdal-bin \
+ libgdal-dev \
+ libffi-dev \
+ git \
+ curl
 
-RUN pip install -r /requirements.txt
 
 RUN  mkdir /app
 WORKDIR /app
-COPY ./app /app
 
-RUN adduser -D user
+COPY requirements.txt /app/
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
+COPY . /app/
+
+RUN adduser  user
 USER user
 
 
